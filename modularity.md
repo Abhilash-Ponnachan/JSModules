@@ -117,6 +117,14 @@ main ---->|
     This approach relies on attaching properties to a global object.  
     Also the dependencies are assumed to be immediately available as soon as this function is executed, this limits the module loading strategies.
 
-    AMD 
- 
+    AMD addresses these by providing a different pattern -
+    ```javascript
+    define(module_id // optional
+        , ['dep1', 'dep2'] // dependencies
+        , function(dep1, dep2){ // a module factory function
+        // ... module code ...
+        return function() {}
+    })
+    ```
+    It introduces the concept of a 'define' function which takes
 
