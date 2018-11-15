@@ -229,14 +229,15 @@ main ---->|
     </html>
     ```
     Note how it has only one 'script tag' the 'require.js', and this has a 'data-main' attribute that tells it what is the entry point. 'require.js' does the rest. We can see the effect of this in the browser's developer tools.  
+    
     First the view of using 'script' tags directly in HTML -
-    ![using script tags](dev-network-script-tags.png)
+    ![using script tags](dev-network-script-tags.png)  
     We can clearly observe the longer stall times (in grey) while the scripts get queued for loading. _Since this is a local page on my machine, the actual load time is negligible_
     
     Next the view of using 'require.js' -
-    ![using require.js](dev-network-amd.png)
+    ![using require.js](dev-network-amd.png)  
     _NOTE: I have simulated a low speed network from the settings_  
-    we can observe the following:
+    We can observe the following:
     * 'index.html' loads 'require.js' and that in turn loads the entry point 'main.js' which in turn loads its dependencies and so on recursivley.
     * There is very little stall time while the page is loading. This is time that the browser is not blocked. This is in contrast to using 'script' tags directly for all dependencies!
 
