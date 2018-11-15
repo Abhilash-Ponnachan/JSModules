@@ -1,7 +1,7 @@
 // use AMD to define our module
 define(['math'], function(math){
     // specify 'math' as dependency
-    // 'math' gets passed in as argument
+    // dependency injection of - 'math' 
     // factory function for the module
 
     // module body

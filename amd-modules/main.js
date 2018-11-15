@@ -1,7 +1,7 @@
 // use AMD to define our module
 define(['calc', 'display'], function(calc, display){
     // specify our dependencies as an array
-    // parameters to inject our depenencies
+    // dependency injection of 'calc' and 'display'
     // factory function for module instantiation
 
     const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
