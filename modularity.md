@@ -4,11 +4,30 @@ Modularity in JS
 Decomposing code into smaller modules is a basic appraoch in programming to control complexity.
 Each module has a smaller surface area than a full program, improving the readability, testability, and maintainability of the code base.
 
+### Concept
+The 'Module' construct in any programming language is meant to address the following concerns:
+* Encapsulation - How to encapsulate the code and avoid exposing everything to the global scope.
+* Expose an Interface - How to export necessary members to the oustide through a defined interface
+* Dependency Refernce - A structured way to refer dependencies.
+
 ### Background
 Node.js has always supported modular programming from its inception, however in the browser world the support has been lagging. Today there are a number of approaches and tools to handle modules.
 
-### Approaches
-We shall examine each of the different approaches here - 
+### Different Approaces
+We shall examine each of the different approaches here. In order to do that we shall use an example scenario. We have a simple application with the following components:  
+1) An 'index.html' page that is the UI for the application
+2) A 'main.js' that has the main application code. It is the entry point.
+3) The 'main.js' uses functions from a 'calc.js' to calculate the RMS value of a list of numbers.
+4) It uses a 'display.js' to display the value in HTML.
+5) The 'calc.js' in turn uses a 'math.js' to do some calculations.
+
+So the dependency graph looks like -  
+<pre>
+          |----> calc ----> math 
+main ---->|
+          |----> display
+</pre>
+
 1) **Using Script Tags**  
     Issues with this approach :   
     a) *Lack of Dependency Resolution*  
@@ -19,8 +38,8 @@ We shall examine each of the different approaches here -
 2) **Module Object & IIFE**  
     In this approach we can reduce the global namespace pollution by having just one global object that will have all the methods needed.
     We normally need an additional JS file to define our global application object.  
-    Then in each of the other JS files we wrap the entire code in an IIFE and within that add the fucntions to our global object as its methods.  
-    This way everything within teh IIFE remains private to that and only one object is exposed globally.
+    Then in each of the other JS files we wrap the entire code in an IIFE and within that add the fucntions to our global object as its methods (this is also known as the 'module pattern').  
+    This way everything within the IIFE remains private to that and only one object is exposed globally.
     This was a common approach taken by the early libraries such as jQuery (the global object is '$').
     This still we have the same issues with :  
     a) *Lack of Dependency Resolution*  
@@ -87,22 +106,17 @@ We shall examine each of the different approaches here -
     When we import a module using 'require()' function, it searches through the path for resolving the location and loading the module. When it finds the module it loads it returns whatever is associated with the 'module.exports' property.
 
 4) **AMD**  
-Whilst CommonJS solves the problem for the server side, it has has a serious constrain for browser applications. The 'require()' function is a synchronous load and with nested dependencies this can block the browser from doing anything else while the modules load.  
-The Asynchronous Module Definition is a format that hopes to allieviate this issue by supporting asynchronous loading of modules.  
-<TODO>
- 
-### Example 
-Let us use an example to walk through the different appraches -  
-We have a simple application with the following parts:  
-1) An 'index.html' page that is the UI for the application
-2) A 'main.js' that has the main application code. It is the entry point.
-3) The 'main.js' uses functions from a 'calc.js' to calculate the RMS value of a list of numbers.
-4) It uses a 'display.js' to display the value in HTML.
-5) The 'calc.js' in turn uses a 'math.js' to do some calculations.
+    Whilst CommonJS solves the problem for the server side, it has has a serious constrain for browser applications. The 'require()' function is a synchronous load and with nested dependencies this can block the browser from doing anything else while the modules load.  
+    The Asynchronous Module Definition is a format that hopes to allieviate this issue by supporting asynchronous loading of modules.  
+    The typical 'module pattern' looks like below:
+    ```javascript
+    (function(){
+        aGlobalObj.exportedFunc = function() {};
+    })();
+    ```
+    This approach relies on attaching properties to a global object.  
+    Also the dependencies are assumed to be immediately available as soon as this function is executed, this limits the module loading strategies.
 
-So the dependency graph looks like -  
-<pre>
-          |----> calc ----> math 
-main ---->|
-          |----> display
-</pre>
+    AMD 
+ 
+

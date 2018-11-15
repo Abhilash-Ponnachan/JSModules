@@ -18,4 +18,5 @@ function calc_rms(numbers){
 
 // export the calc function from this module
 module.exports = calc_rms;
+// NOTE: it exports only one function
 
