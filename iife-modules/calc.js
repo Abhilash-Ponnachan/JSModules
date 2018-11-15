@@ -12,6 +12,6 @@ RMS.calc_rms = function (numbers){
             },
             0
             );
-        return r;
+        return RMS.sqrt(r);
     }
 })();   // invoke immediately

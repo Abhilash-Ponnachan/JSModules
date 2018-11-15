@@ -126,5 +126,19 @@ main ---->|
         return function() {}
     })
     ```
-    It introduces the concept of a 'define' function which takes
+    It introduces the concept of a 'define' function which takes an array of depenencies that is needed by our module (as strings just like the CommonJS approach), and a factory function that instantiates our module. _The 'module_id' parameter is optional (useful for edge cases)_.
+
+    The AMD format takes a functional prgramming approach which allows:
+    * Passing in the dependencies as arguments rather than relying on globals
+    * The HOF 'define' takes a factory function that can be invoked once the required modules are loaded.  
+    * Also note how the factory function uses 'Dependency Injection' pattern to provide the dependencies to the current module.
+
+    The support for asynchrnous instantiation makes it ideal for today's browser scenarios. 
+
+    ##### AMD Loaders
+    There are a number of module loaders that implement the AMD format. Th emost common are -
+    - RequireJS
+    - cujojs/curl 
+
+    Let us implement our example using AMD and RequireJS.
 

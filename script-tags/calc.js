@@ -7,5 +7,5 @@ function calc_rms(numbers){
         },
         0
         );
-    return r;
+    return sqrt(r);
 }

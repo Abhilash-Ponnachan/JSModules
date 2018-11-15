@@ -13,7 +13,7 @@ function calc_rms(numbers){
         },
         0
         );
-    return r;
+    return myMath.sqrt(r);
 };
 
 // export the calc function from this module
