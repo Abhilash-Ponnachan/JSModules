@@ -67,9 +67,70 @@ main ---->|
     In this case our example will not have any HTML and will be run as a Node.js app from the commandline.  
 
     The way to use CommonJS is quite straightforward -   
-    Whatever we wish to expose outside of our module (file) we assign as value to 'module.exports' where 'module' is a global object implemented by Node.js.
-    If we examine 'module' object for this project, we can see -
+    Whatever we wish to expose outside of our module (file) we assign as value to 'module.exports' where 'module' is a global object implemented by Node.js.  
+    Our code for 'main.js' will look like below -    
+    ```javascript
+    // CommonJS will treat this file as a module
+    // import the calculation module
+    const calc_rms = require('./calc.js')
+    // import the display module
+    const display_value = require('./display.js')
 
+    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const rms = calc_rms(numbers);
+    // NOTE: we are using the single exported function 
+
+    display_value(rms);
+    // NOTE: we are using the single exported function
+    ```
+    The depenency 'calc.js' will look like -    
+    ```javascript
+    // CommonJS will treat this file as a module
+    // import the required functions from 'math.js'
+    const myMath = require('./math.js')
+
+    function calc_rms(numbers){
+        // access methods via the imoported object
+        let r = myMath.reduce(myMath.map(numbers, (x) => {
+            // body suppressed for brevity
+        });
+        return myMath.sqrt(r);
+    };
+
+    // export the calc function from this module
+    module.exports = calc_rms;
+    // NOTE: it exports only one function
+    ```
+    And 'math.js' will look like -    
+    ```javascript
+    // CommonJS will treat this JS file as a module
+    function map(items, fun){
+        // body suppressed for brevity
+    }
+
+    function reduce(items, fun, seed){
+        // body suppressed for brevity
+    }
+
+    function sqrt(num){
+        // body suppressed for brevity
+    }
+    // all the above code will be private to this file/module
+
+    // explicitly expose the required members via export
+    module.exports = {map, reduce, sqrt};
+    ```  
+    Finally 'display.js' will be -
+    ```javascript
+    // CommonJS will treat this file as a module
+    // define and export the function directly
+    module.exports = function display_value(value){
+        // Since CommonJS is server side we can just write to console
+        console.log(`The RMS value is ${value}`);
+    }
+    ```  
+
+    If we examine 'module' object for this project, we can see -
     ```javascript
     > module    
     Module {

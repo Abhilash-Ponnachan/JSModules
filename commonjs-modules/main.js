@@ -12,4 +12,5 @@ const rms = calc_rms(numbers);
 display_value(rms);
 // NOTE: we are using the single exported function
 
+// We can write the 'module' object to console
 console.log(module);

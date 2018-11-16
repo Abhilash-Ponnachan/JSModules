@@ -1,3 +1,4 @@
+// brwoserify will use the CommonJS format for module
 // CommonJS will treat this JS file as a module
 function map(items, fun){
     let r = [];
