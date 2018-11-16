@@ -258,8 +258,7 @@ main ---->|
         + browserify@16.2.3
         added 137 packages in 61.987s
     ```
-    So now we have brwiserify installed globally via npm.
-    Now let us modify our example slightly to use browserify.  
+    Now that we have browserify installed globally via npm, let us modify our example slightly to use it.  
     The JS code will look just like our CommonJS example, so the 'main.js' would be -
     ```javascript
     // browserify will use the CommonJS format for module
