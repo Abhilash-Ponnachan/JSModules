@@ -229,7 +229,7 @@ main ---->|
     </html>
     ```
     Note how it has only one 'script tag' the 'require.js', and this has a 'data-main' attribute that tells it what is the entry point. 'require.js' does the rest. We can see the effect of this in the browser's developer tools.  
-    
+
     First the view of using 'script' tags directly in HTML -
     ![using script tags](dev-network-script-tags.png)  
     We can clearly observe the longer stall times (in grey) while the scripts get queued for loading. _Since this is a local page on my machine, the actual load time is negligible_
@@ -240,5 +240,82 @@ main ---->|
     We can observe the following:
     * 'index.html' loads 'require.js' and that in turn loads the entry point 'main.js' which in turn loads its dependencies and so on recursivley.
     * There is very little stall time while the page is loading. This is time that the browser is not blocked. This is in contrast to using 'script' tags directly for all dependencies!
+
+    For all its benefits AMD has some  minor drawbacks -
+    1) The syntax is too verbose, wrapping everything up in 'define' and specifying all those dependencies as paramters.
+    2) The list of dependencies in the array must match the parameter list of of the factory function. This can get quite cumbersome as the count increases.
+    3) With todays HTTP 1.1 browsers loading many small files can degrade the performance! _Currently bundling the assets for download seems to perform better, however with HTTP/2 the behaviour may flip over to multiple small assets._
+
+5) **Browserify**
+    Given that today performance is generally better in browsers with fewer assets to download (over HTTP/1.1), and the fact that AMD syntax is percieved as more verbose, a preferred appraoch is to use the CommonJS format and bundle the code together.  
+    'Browserify' is a commnd line tool that achieves this. It traverses the dependency tree of our code and bundles them all into a single file. And we can use the CommonJS format.
+
+    In order to use 'Browserify' we have to install it using NPM (so it requires Node.js and NPM installed first). So we first do that -
+    ```bash
+    $ npm install -g browserify
+
+    ..\AppData\Roaming\npm\browserify -> ..\AppData\Roaming\npm\node_modules\browserify\bin\cmd.js
+        + browserify@16.2.3
+        added 137 packages in 61.987s
+    ```
+    So now we have brwiserify installed globally via npm.
+    Now let us modify our example slightly to use browserify.  
+    The JS code will look just like our CommonJS example, so the 'main.js' would be -
+    ```javascript
+    // browserify will use the CommonJS format for module
+    // CommonJS will treat this file as a module
+
+    // import the calculation module
+    const calc_rms = require('./calc.js')
+    // import the display module
+    const display_value = require('./display.js')
+
+    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const rms = calc_rms(numbers);
+    // use the single exported function 
+    const el = document.getElementById('value');
+    display_value(el, rms);
+    // use the single exported function
+    ```
+    The other modules namely 'math.js', 'calc.js', 'display.js' will be on same lines (using CommonJS).  
+    The 'index.html' however will have a slight change -
+    ```html
+    <html>
+        <head>
+            <title>JS Modules with Script-tags</title>
+        </head>
+        <body>
+            <h1>RMS value of the numbers is <span id="value"></span>
+            </h1>
+            <script type="text/javascript" src="bundle.js"></script>
+        </body>
+    </html>
+    ```
+    Note how the script tag refers to a 'bundle.js' file (which we have not written)!
+
+    Now we run 'browserify' bundler within our project directory -
+    ```bash
+    $ browserify main.js -o bundle.js
+    ```
+    Here we specify our entry point 'main.js' and the '-o' followed by the name we wish for the output (bundled) JS file. It is file that is specified in our script tag of our HTML.  
+    Brpwserify will parse the JS files, traverse the dependency tree and create a single bundled JS file - 'bundle.js' -
+    ```javascript
+    (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+
+        // our code will be here ...
+
+    
+        },{}]},{},[3]);
+    ```
+    The generated file is slightly cryptic looking but our familiar code sections are recognizable.
+
+    Now let us see what the network characteristics are when we load the page -  
+    ![using browserify](dev-network-browserify.png)  
+    And we can see that there is only one single JS file that gets downloaded which happens relatvely fast.
+
+
+
+
+
 
 
