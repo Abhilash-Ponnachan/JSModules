@@ -246,7 +246,7 @@ main ---->|
     2) The list of dependencies in the array must match the parameter list of of the factory function. This can get quite cumbersome as the count increases.
     3) With todays HTTP 1.1 browsers loading many small files can degrade the performance! _Currently bundling the assets for download seems to perform better, however with HTTP/2 the behaviour may flip over to multiple small assets._
 
-5) **Browserify**
+5) **Browserify**  
     Given that today performance is generally better in browsers with fewer assets to download (over HTTP/1.1), and the fact that AMD syntax is percieved as more verbose, a preferred appraoch is to use the CommonJS format and bundle the code together.  
     'Browserify' is a commnd line tool that achieves this. It traverses the dependency tree of our code and bundles them all into a single file. And we can use the CommonJS format.
 
@@ -298,7 +298,7 @@ main ---->|
     $ browserify main.js -o bundle.js
     ```
     Here we specify our entry point 'main.js' and the '-o' followed by the name we wish for the output (bundled) JS file. It is file that is specified in our script tag of our HTML.  
-    Brpwserify will parse the JS files, traverse the dependency tree and create a single bundled JS file - 'bundle.js' -
+    Browserify will parse the JS files, traverse the dependency tree and create a single bundled JS file - 'bundle.js' -
     ```javascript
     (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 
