@@ -83,7 +83,7 @@ main ---->|
     display_value(rms);
     // NOTE: we are using the single exported function
     ```
-    The depenency 'calc.js' will look like -    
+    The dependency 'calc.js' will look like -    
     ```javascript
     // CommonJS will treat this file as a module
     // import the required functions from 'math.js'
@@ -309,7 +309,7 @@ main ---->|
 
 5) **Browserify**  
     Given that today performance is generally better in browsers with fewer assets to download (over HTTP/1.1), and the fact that AMD syntax is percieved as more verbose, a preferred appraoch is to use the CommonJS format and bundle the code together.  
-    'Browserify' is a commnd line tool that achieves this. It traverses the dependency tree of our code and bundles them all into a single file. And we can use the CommonJS format.
+    'Browserify' is a command line tool that achieves this. It traverses the dependency tree of our code and bundles them all into a single file. And we can use the CommonJS format.
 
     In order to use 'Browserify' we have to install it using NPM (so it requires Node.js and NPM installed first). So we first do that -
     ```bash
@@ -371,7 +371,7 @@ main ---->|
 
     Now let us see what the network characteristics are when we load the page -  
     ![using browserify](dev-network-browserify.png)  
-    And we can see that there is only one single JS file that gets downloaded which happens relatvely fast.
+    And we can see that there is only one single JS file that gets downloaded which happens relatively fast.
 
 
 
@@ -379,3 +379,175 @@ main ---->|
 
 
 
+
+6) **ES6 Module Syntax**
+    With the ES6 (ES2015+) language specification, JS now has a native syntax support for modules. The ES6 modules have been deisgned to behave in some particular ways:  
+    -  In ES6 each 'JS file' is a module. We cannot split a module into multiple files neither can we combine multiple modules in one file (apart from bundling). 
+    - A JS file/module provides encapsulation for all code within it. Anything we wish to expose should be done so with 'export' statement. Everything else remains private.
+    - A module exposes a 'static interface' (somewhat like static typed cmpiled languages). This cannot be modified at runtime. If at all any such need arises it has to be handled through members of exported objects.
+    - A module API exposes only 'bindings' and not values. These are references to exportted objects and not value copies. This means that anytime the value exposed by an API is modified, all imported references are impacted. Think of it like 'pointers'.
+    - These bindings are one-way, that is they cannot be modified from outside the module. The imported binding identifiers are read-only. This makes sense as otherwise there would be no control on the state of the module.
+    - To access the exposed API of a module we have to 'import' it.
+    - Importing a module is same as loading it (unless it is already loaded). This results in a blaocking load.
+    - An ES6 module is a singleton. All imports of a given module will get the same instance. If an API modifies any state within the module it can impact  all other imports of that module.  
+
+    ***Syntax for export***
+    - Named export -
+    ```javascript
+    // prefix the 'declaration' with 'export'
+    export function foo(){}
+    export var PI = 3.4141;
+    ```
+    ```javascript
+    // use identifiers to export
+    function foo(){}
+    var PI = 3.4141;
+    // specify a list of identifiers in export
+    export {foo, PI}
+    // NOTE: 'foo' in export is an identifier pointing to function expression foo!
+    ```
+    - Default export - 
+    We can sepcify a particular exported binding to be the default one. This just means that when importing this module the syntax is simpler. Under the hood the default binding is exported literally using the name 'default'!  
+    There can be only one defualt export per module and is the preferred way when possible.
+    ```javascript
+    // default export with declaration
+    export default function foo(){}
+    ```
+    ```javascript
+    function foo(){}
+    // default export the function expression
+    export default foo;
+    ```
+    ```javascript
+    function foo(){}
+    // default export an identifier to the function
+    export {foo as default};
+    // NOTE: here 'foo' identifier has become default because it was aliased as 'default'!
+    ```
+    - Export alias -
+    ```javascript
+    function foo(){}
+    // export foo with another alias
+    export {foo as bar};
+    // NOTE: when imported the binding will have name 'bar' and foo will be private
+    ```
+    - Re-export from another module -
+    ```javascript
+    export * from "baz";
+    // 'from' keyword to re-export
+    ```
+    ***Syntax for import***
+    For importing we use the 'import' keyword.
+    - Specify named members -
+    ```javascript
+    // import specified members
+    import {foo, bar, baz} from "foo";
+    ```  
+    Note: "foo" is the module-specifier and has to be a string becuase it is statically analyzed.  
+    The identifiers specified (foo, bar) in import shoudl match the exported bindings from the module.
+    - Rename imported members -
+    ```javascript
+    // rename to avoid naming conflict or for friendly name
+    import {calcluateAverage as mean} from "stats";
+    ```  
+    - Import default member -
+    ```javascript
+    // identifier without {..}
+    import foo from "foo";
+    // same as
+    import {default as foo} from "foo";
+    ``` 
+    The default import has the cleanest syntax and is the recommended way.  
+    Of course we can have one default and other specified imports in the same statement.
+    ```javascript
+    // default and named
+    import foo, {bar, baz as "bar2"} from "foo";
+    // foo is default
+    ``` 
+    - Import everything -
+    We can import all exported bindings in one go. Generally imported to a namespace object
+    ```javascript
+    // wildcard '*'
+    import * as foo from "foo";
+
+    // access using namespace
+    foo.default() // default exported -> foo()
+    foo.bar();
+    foo.baz();
+    ``` 
+    ```javascript
+    // mix default & '*'
+    import fooFn, * as foo from "foo";
+
+    // access using namespace
+    fooFn(); // default export -> foo()
+    foo.default() // default exported -> foo()
+    foo.bar();
+    foo.baz();
+    ``` 
+    - Empty import -
+    ```javascript
+    // no identifier specified
+    import "foo";
+    ```  
+    In this case nothing gets imported into this scope. It just loads the module 'foo'. Usually used when we want some initialization codeto be excuted.  
+    Let us modify our example to work with ES6 syntax, and we shall do this on the server-side first -  
+     - our math module will now look like - 
+     ```javascript
+    // ES6 module syntax
+    function map(items, fun){
+        // body suppressed for brevity
+    }
+
+    function reduce(items, fun, seed){
+        // body suppressed for brevity
+    }
+
+    function sqrt(num){
+        // body suppressed for brevity
+    }
+
+    // export a list of function bindings
+    export {map, reduce, sqrt};
+    ``` 
+     - and calc which uses math will look like - 
+     ```javascript
+    // ES6 module syntax
+    // import everything from 'math'
+    import * as math from './math';
+
+    // default export
+    export default function calc_rms(numbers){
+        // access methods via the imported namespace 'math'
+        let r = math.reduce(math.map(numbers, (x) => {
+            // body suppressed for brevity
+        };
+        return math.sqrt(r);
+    };
+    ``` 
+     - display module will have simialr change to export - 
+     ```javascript
+    // ES6 module syntax
+    // import default member from calc
+    import calc_rms from './calc';
+    // import with alais from calc
+
+    //import {display_value as display} from './display';
+    // NOTE: the above does not work with Node V 8.10 as of now
+    // fallback to default
+    import display_value from './display';
+
+    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const rms = calc_rms(numbers);
+    // NOTE: we are using the single exported function 
+
+    display_value(rms);
+    // NOTE: we are using the binding alais
+    ```
+    - _Support for ES6 in Node.js as of v8.10_
+    It is important to note that as of v8.10 of Node.js the support for ES6 modules is still experimental, and in order to execute this code we need to do two things -
+         - rename all the '\*.js' files to '\*.mjs'
+         - excute node using the switch --experimental-modules
+         ```bash
+         $ node --experimental-modules main.mjs
+         ```
