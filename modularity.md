@@ -525,23 +525,32 @@ main ---->|
         return math.sqrt(r);
     };
     ``` 
-     - display module will have simialr change to export - 
+    - display module will have simialr change to export - 
+     ```javascript
+    // ES6 module syntax
+    // default export
+    export default function display_value(value){
+        // Since this is server side we can just write to console
+        console.log(`The RMS value is ${value}`);
+    }
+    ```
+    - finally the main module which brings it all together - 
      ```javascript
     // ES6 module syntax
     // import default member from calc
     import calc_rms from './calc';
     // import with alais from calc
-
     //import {display_value as display} from './display';
-    // NOTE: the above does not work with Node V 8.10 as of now
-    // fallback to default
-    import display_value from './display';
+    // NOTE: use the above if it was a named exported
+    // use the below one for default exported
+    import display from './display';
+    // NOTE: the identifier name of imported binding can be different
 
     const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const rms = calc_rms(numbers);
     // NOTE: we are using the single exported function 
 
-    display_value(rms);
+    display(rms);
     // NOTE: we are using the binding alais
     ```
     - _Support for ES6 in Node.js as of v8.10_
@@ -551,3 +560,190 @@ main ---->|
          ```bash
          $ node --experimental-modules main.mjs
          ```
+
+7) **TS Module System**  
+    Whilst the ES6 specification has introduced module as a first class concept in the language, the implementation is in different stages of catch-up on various platforms.  
+    A cleaner way to get support for ES6 features is to use a transpiler like Babel or TypeScript.  
+    Babel transpiler provides full support for ES6 language features and converts them down to supported JS format.  
+    Whilst TypeScript also does the same task oc transpiling to JS, it is also introduces a statically typed language over JS. TypeScript follows a principle of being a 'strict superset' of JS. That is any valid JS/ES6 code is valid TS code.  
+    The module concepts in TS are same as that of ES6. we have different synatx and semantics for export and import.  
+
+    ***Syntax for export***  
+    - Export declaration -
+    A way of named exports directly while declaring the member - 
+    ```typescript
+    // specify export along with declaration
+    export const PI = 3.41459;
+    
+    export function calcArea(radius){
+        // ...
+    }
+
+    export class Calculator{
+        // ...
+    } 
+    ```   
+    - Export statement -
+    A way of named exports of members as identifiers after they are declared - 
+    ```typescript
+    // specify export along with declaration
+    const PI = 3.41459;
+    
+    function calcArea(radius){
+        // ...
+    }
+
+    class Calculator{
+        // ...
+    } 
+
+    // export members as identifiers 
+    export {PI, calcArea, Calculator};
+    ```   
+     - Export alias -
+    With export statements we can rename our exported member and give an alais which is what will get exposed.
+    ```typescript
+    // export members with alais
+    export {PI, calcArea as area, Calculator as Calc};
+    ``` 
+    - Re-export -
+    Sometimes a module might need to export part of another module. We can do this using re-export.
+    ```typescript
+    // re-export members from another module
+    // use the 'export .. from' syntax
+    export {calcArea as area} from "./mycalc";
+    ``` 
+    Here the re-exported module is not imported locally!
+    - Default export -
+    A module can also specify a member as a 'default' export. The real difference is from when we import from this module, it provides a more simpler syntax. We shall see this in the import section later.
+    ```typescript
+    // default export with declaration
+    export default class Calculator{
+        // ...
+    } 
+    ```
+    ```typescript
+    const PI = 3.41459;
+
+    function calcArea{
+        // ...
+    } 
+
+    // default export statement for function
+    export default calcArea;
+    // named export statement for constant
+    export {PI};
+    ```
+    ***Syntax for import***  
+    - Named import -
+    Import a set of exported members from a module explicitly by name - 
+    ```typescript
+    // specify members to be imported
+    import {calcArea, Calculator} from "./myCalc";
+    ``` 
+    - Named import with alais/rename -
+    ```typescript
+    // rename the member on import
+    import {calcArea as area, Calculator as Calc} from "./myCalc";
+    ```  
+     - Import everything - Using '*'
+    ```typescript
+    // import all exported members into a namespace
+    import * as calc from "./myCalc";
+    // access members using the wrapper
+    const area = calc.calcArea(4.0);
+    ```  
+    - Empty import -
+    Import without getting any members into scope. Used just for side-effects when module is loaded.
+    ```typescript
+    // import only for side-effects
+    import "./myCalc";
+    ```  
+    - Default import -
+    Import default exported members with a simpler syntax.
+    ```typescript
+    // import default exported member into an identifier
+    import Calc from "./myCalc";
+    ```  
+    Now let us try writing our example uisng TS.  
+    When we use VS Code as our IDE, it is relatively easy to configure a TS project. The first step is to create a "tsconfig.json" file. This is a manifest file that instructs VS Code that this is a TS project and to function accordingly.  
+    - our 'tsconfig.json' -
+    ```json
+    {
+        "compilerOptions":{
+            "target": "es5",
+            "module": "commonjs",
+            "sourceMap": true
+        }
+    }
+    ```
+    - the math module as '.ts' file -
+    ```typescript
+    // Use TS class and export it as defualt
+    export default class FuncMath{
+        // static methods - no encapsulated state
+        static map(items, fun){
+            // body suppressed for bervity
+        }
+
+        static reduce(items, fun, seed){
+            // body suppressed for bervity
+        }
+
+        static sqrt(num){
+            // body suppressed for bervity
+        }
+    }
+    ```
+    - calc module that uses math -
+    ```typescript
+    // import default-export from 'math'
+    import Maths from './math';
+    // Note exported name was 'FuncMath'
+    // default export function
+    /* 
+    NOTE: here we are just using a function without class,
+    though we are using types for the param & return.
+    */
+    export default function calc_rms(numbers: Array<number>): number{
+        // access methods via the imoported class 'Maths'
+        let r = Maths.reduce(Maths.map(numbers, (x) => {
+            // body suppressed for brevity
+        };
+        return Maths.sqrt(r);
+    };
+    ```
+    - display module -
+    ```typescript
+    /*
+    NOTE: We are using just functions directly without class,
+    though we are specifying return type.
+    */
+    function display_value(value: string){
+        // Since this is server side we can just write to console
+        console.log(`The RMS value is ${value}`);
+    }
+    // let us use a named export
+    export {display_value};
+    ```
+    - bring it all together with the main -
+    ```typescript
+    // TS module syntax
+    // import default member from calc
+    import calc_rms from './calc';
+    // import with alais from display
+    import {display_value as display} from './display';
+
+    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const rms = calc_rms(numbers);
+    // NOTE: we are using the single exported function 
+
+    display(rms.toString());
+    // NOTE: we are using the binding alias
+    ```  
+    In order to build this in VS Code we Run Build Task (Ctrl+Shift+B), which should show up "tsc: build - tsconfig.json" and "tsc: watch - tsconfig.json" options. The "build2 option builds once, and "watch" runs build everytime a '.ts' file in the project changes. We can make this the defualt behavior when we hit "Ctrl+Shift+B" by configuring the build task with a 'tasks.json' file.    
+    Under the hood it runs the 'tsc' compiler and we get '.js' and '.js.map' files. Now just execute the entry point with node.
+    ```bash
+    $ node main.js
+    ```  
+    We can see that TS is a good option to write modular ES code. Also since TS is a strict superset of ES, we can mix and match these as needed in our project (judiciously).
