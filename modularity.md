@@ -915,7 +915,16 @@ main ---->|
     ```  
     This should create a _bundle.js_ file which is referenced in the HTML script and if we open _index.html_ we should see our page.  
     
-    So there we have it, we have managed to write modular JS using ES6 format and get it working in a browser by transpiling it using _Babel_ and orchestrating the bundling using _Webpack_.
+    So there we have it, we have managed to write modular JS using ES6 format and get it working in a browser by transpiling it using _Babel_ and orchestrating the bundling using _Webpack_. In order to achieve this we needed to install a number of NPM packages, if we examine our dependencies we can see -
+    ```json
+    "devDependencies": {
+        "@babel/core": "^7.1.6",
+        "@babel/preset-env": "^7.1.6",
+        "babel-loader": "^8.0.4",
+        "webpack": "^4.26.1",
+        "webpack-cli": "^3.1.2"
+    }
+    ```
 
     - ***There is more*** 
 
