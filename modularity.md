@@ -746,4 +746,190 @@ main ---->|
     ```bash
     $ node main.js
     ```  
-    We can see that TS is a good option to write modular ES code. Also since TS is a strict superset of ES, we can mix and match these as needed in our project (judiciously).
+    We can see that TS is a good option to write modular ES code. Also since TS is a strict superset of ES, we can mix and match these as needed in our project (judiciously).  
+
+8) **Webpack**  
+    We have seen how to easily use ES6 and TS module formats on the server side with Node.js. But how can we use these with browser applications? Just like using 'Browserify' for CommonJS format, there are other module bundlers that we can use for ES6 format. The most popular one at the moment is 'Webpack'. In fact it can handle CommonJS, AMD and ES6 formats.  
+    Like Browserify, Webpack too traverses the dependency tree for JS, identifies the modules and bundles them together. However Webpack can do a lot more. 
+    - Webpack has a _plugin architecture_ for handlers that can operate on the files during the bundling process
+    - This enables different types of loaders for not just JS, but other assets such as CSS, Sass, Less, CoffeScript, images etc.
+    - We can do _code-split_ to chunk our bundles. This is helpful if we have say 2 apps which use a shared set of libraries. Webpack can build it into 3 bundles - app1, app2, and shared-lib. Browserify does not support this  
+    
+    At the time of writing (Dec 2018) the latest version of Webpack is 4, and like all tools it there are significant changes with this major version release. We shall cover Webpack 4.
+
+    - **Install Webpack**  
+
+    The first step is to install Webpack, and for this we use NPM. Go to our project dirctory, initialize NPM, and install the required Webpack tools. We need 2 packages in order to use Webpack from the command line -
+        - webpack
+        - webpack-cli
+    ```bash
+    $ npm init -y
+
+    $ npm i -D webpack webpack-cli
+    ```
+    This should initalize npm for us and install the 2 webpack packages as development dependencies, our _package.json_ should now have -
+    ```json
+    "devDependencies": {
+        "webpack": "^4.26.1",
+        "webpack-cli": "^3.1.2"
+    }
+    ```
+    - **NPM scripts to run Webpack**  
+    
+    In order to execute Webpack commands we have to configure them to be excuted through _npm scripts_. We can modify the _scripts_ section in our _package.json_ -
+    ```json
+    "scripts": {
+        "build": "webpack"
+    }
+    ```
+    Now if we run NPM build we get -
+    ```
+    > ERROR in Entry module not found: Error: Can't resolve './src' in ...
+    ```  
+    Webpack cannot find an _entry point_ to traverse for the dependency tree. In previous versions of Webpack the _entry point_ had to be explicitly specified with a webpack config file, from version 4 onwards however this defaults to "__./src/index.js__". Similarly the output file(bundle) is defaulted to "__./dist/main.js__".  
+    Normally we should follow this convention as it is a common standard and gives a good source code structure. However  in our case we shall just use a __webpack.config.js__ file and modify the defaults in order to re-use the source structure we setup in the other examples!  
+    But before that we configure the NPM scripts with a little bit more detail -
+    ```json
+    "scripts": {
+        "dev": "webpack --mode development",
+        "build": "webpack --mode production"
+    },
+    ```
+    The _production_ mode enables all sorts of optimizations such as minimization, tree-shaking hoisting etc.  
+    If we wished to we could specify the _entry point_ and _output_ here as arguments to the _dev_ and _build_ commands!
+    ```json
+    "scripts": {
+        "dev": "webpack --mode development ./main.js --output ./bundle.js",
+        "build": "webpack --mode production ./main.js --output ./bundle.js"
+    },
+    // we won't use this approach!
+    ```
+    But if we decide to override default configuration then I prefer to have all related configuration in the same place. So we shall do that in the sections below and NOT use this approach!
+
+    - **Setup source code**  
+
+    Next we copy over all our files from our ES6 example _(and rename the *.mjs extensions to *.js)_. Some __bash__ can help us do this -
+    ```bash
+    $ cp -r es6-modules/. webpack-modules/
+    $ cd webpack-modules/ && ls
+
+    $ for f in *.mjs; do
+    >  mv "$f" "$(basename "$f" .mjs).js"
+    > done
+    ```
+    Next we copy over our _index.html_ from our Browserify example, and we should have all the files we need now to make some minimal configuration setup. We need to make some minor changes to our _display.js_ to modify HTML isntead of logging to console -
+    ```javascript
+    // ES6 module syntax
+    // default export
+    export default function display_value(elem, value){
+        // set the elements inner HTML
+        elem.innerHTML = `The RMS value is ${value}`;
+    }
+    ```  
+    and corresponding change in _main.js_ to pass in the HTML anchor element -
+    ```javascript
+    ...
+    const elem = document.getElementById('value');
+    display(elem, rms);
+    ...
+    ``` 
+
+    - **Install Transpiler (_Babel_)**  
+
+    Since the browser does not understand ES6 we need to transpile it down to ES5 and the most popular trnspiler for ES6 is _Babel_. Again we have to install this via NPM. The actual dependencies are -   
+        - babel core  
+        - babel loader (webpack loader for babel)  
+        - babel preset env(compiling ES6 to ES5)
+    ```bash
+    $ npm i -D @babel/core @babel/preset-env babel-loader
+    >
+    + @babel/core@7.1.6
+    + babel-loader@8.0.4
+    + @babel/preset-env@7.1.6
+    ```  
+    To configure Babel to execute and transpile our code we have to specify some minimal configuration by creating a _.babelrc_ configuration file -
+    ```json
+    {
+        "presets":[
+            "@babel/preset-env"
+        ]
+    }
+    ```
+    - **Configure _Webpack_ to use _Babel_**  
+
+    We have to specify to Webpack to load and run Babel for JS files. We can do this using a _webpack.config.js_ file -
+    ```javascript
+    // export a configuration object
+    module.exports = {
+        // specify entry-point
+        entry: './main.js',
+        // specify output object
+        output: {
+            filename: 'bundle.js',
+            path: __dirname // project directory
+        },
+        /*
+        NOTE: If we use the default setting of ./src & ./dist
+        folder structure we would not need the above.
+        In actual projects stick to the defualt standard convention!
+        */
+        // specify modules to use
+        module: {
+            // an array of rules
+            rules: [
+                {
+                    // test for JS files
+                    test: /\.js$/, // regex pattern
+                    // exclude some folders
+                    exclude: /node_modules/,
+                    use: {
+                        // specify the loader
+                        loader: 'babel-loader'
+                    }
+                }
+            ]
+        }
+    };
+    ```
+    Note that the _Webpack configuration_ file itself is a JS file and uses CommonJS format!  
+    ___Alternate Option___  
+    From Webpack 4 there is an option to circumvent having to create _webpack.config.js_ by specifying the loader as a command line argument using _--module-bind_ switch. So if needed we can have it in the NPM scripts section in _package.json_ -
+    ```json
+    scripts{
+        "dev": "webpack --mode development --module-bind js=babel-loader",
+        "build": "webpack --mode production --module-bind js=babel-loader"
+    }
+    // we will NOT use this option
+    ```  
+    But throwing everything into the scripts makes it complicated and deviates from seperation of concerns! So we will stick with the _webpack.config.js_ file.  
+
+    - **Execute Webpack build**  
+
+    Now we are ready to build our project using Webpack. To do that simply execute the NPM script for _development_ or _production_ as needed.
+    ```bash
+    $ npm run dev
+    ```  
+    OR
+    ```bash
+    $ npm run build
+    ```  
+    This should create a _bundle.js_ file which is referenced in the HTML script and if we open _index.html_ we should see our page.  
+    
+    So there we have it, we have managed to write modular JS using ES6 format and get it working in a browser by transpiling it using _Babel_ and orchestrating the bundling using _Webpack_.
+
+    - ***There is more*** 
+
+    We have just scratched the surface of what Webpack is useful (and capable) of. One very common configuration is to setup a _webpack-dev-server_. This is a development time embedded server that can run our application in a browser. If we specify the _--watch_ option this will automatically refresh the application in the browser as we make changes to the source code.  
+    To do this we would have to install -
+    ```bash
+    $ npm i -D webpack-dev-server
+    ```  
+    and modify the _scripts_ section in _package.json_ to start it -
+    ```json
+    "scripts": {
+        "start": "webpack-dev-server --mode development --watch",
+        "build": "webpack --mode production"
+    }
+    ```  
+    We can also specify loaders and transpilers to work with CSS, HTML, ReactJS etc.
+
